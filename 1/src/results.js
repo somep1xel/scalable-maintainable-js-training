@@ -1,7 +1,7 @@
 ;(function ( $, window, document, undefined ) {
 
-    var pluginName = "quiz",
-        quizData = [],
+    var pluginName = "resultsPlugin",
+        quizResults = [],
         defaults = {
             propertyName: "value"
         };
@@ -19,9 +19,7 @@
     }
 
     Plugin.prototype.init = function () {
-
-         this.renderQuestions();
-         this.bindEvents();
+         this.loadResults();
     };
 
 
@@ -34,27 +32,48 @@
         });
     }
 
-    Plugin.prototype.renderQuestion = function ( id, item ) {
-        var element = $(this.element),
-        answersHtml = '';
 
-        element.append( "<br><br><div class='q' data-id='" + id + "'>" + item.question);
+ Plugin.prototype.loadResults = function ( options ) {
 
-        $.each( item.answers, function( key, answer ) {
-            answersHtml = answersHtml + "<div class='aaa' data-id='" + key + "'>" + answer + "</div>" ;
+        var element = $(this.element);
+        var _self = this;
+
+        $.getJSON('results.json', function(data){
+
+          $.each( data, function( key, val ) {
+            quizResults.push(val);
+          });
+
+          _self.showResult(_self.options.quizCounter);
         });
-
-        element.append( answersHtml + "</div>" );
-
+       
     }
 
-    Plugin.prototype.bindEvents = function (  ) {
-        $(".aaa").on('click', function(){
+ Plugin.prototype.showResult = function ( quizCounter ) {
 
-            alert('ee');
-        });
+
+        var element = $(this.element);
+        var _self = this;
+
+      $.each( quizResults, function( key, resultItem ) {
+
+        if (Number(quizCounter) <  Number(resultItem.to) && (Number(key) == Number(quizResults.length-1)))
+        {
+            alert(String(resultItem.status));
+            return;
+        }
+
+        if (Number(quizResults.length-1) == Number(key))
+        {
+            if (previousStatus)
+            alert(String(previousStatus));
+        else
+            alert(String(resultItem.status));
+            return;
+        }
+        var previousTo = Number(resultItem.to);
+        var previousStatus = String(resultItem.status);
+      });
     }
-    
-
 
 })( jQuery, window, document );

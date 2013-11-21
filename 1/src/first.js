@@ -1,8 +1,8 @@
 ;(function ( $, window, document, undefined ) {
 
-    var pluginName = "quiz",
+    var pluginName = "questionsPlugin",
         quizData = [],
-        quizResults = [],
+        quizCounter = 0,
         defaults = {
             propertyName: "value"
         };
@@ -22,7 +22,6 @@
     Plugin.prototype.init = function () {
 
          this.loadQuestions();
-         this.loadResults();
          
     };
 
@@ -45,27 +44,58 @@
           $.each( data, function( key, val ) {
             quizData.push(val);
           });
-          
+           _self.renderQuestions();
+           _self.bindEvents();
         });
        
     }
 
- Plugin.prototype.loadResults = function ( options ) {
 
-        var element = $(this.element);
-        var _self = this;
 
-        $.getJSON('results.json', function(data){
+    Plugin.prototype.renderQuestions = function ( id, item ) {
+        
+        var element = $(this.element),
+         _self = this,
+        answersHtml = '';
 
-          $.each( data, function( key, val ) {
-            quizResults.push(val);
-          });
-          
+        $.each( quizData, function( key, question ) {
+            answersHtml = answersHtml + _self.renderQuestionItem(question);
         });
-       
+
+        element.append(answersHtml);
+        element.find(".question").first().show();
     }
 
+    Plugin.prototype.renderQuestionItem = function ( questionItem ) {
+
+        var element = $(this.element),
+         _self = this
+        answersHtml = '';
+
+        answersHtml = answersHtml + "<div class='question' style='display:none;'><strong>" + questionItem.question + "</strong>" + "<br><br>";
+
+        $.each( questionItem.answers, function( key, answer ) {
+            answersHtml = answersHtml + "<input type='radio' name='q"+key+"' value='"+questionItem.points[key] + "'>" + answer + "<br><br>";
+        });
+
+        return "</div>" + answersHtml;
+    }
     
+    Plugin.prototype.bindEvents = function (  ) {
+        var element = $(this.element),
+        _self = this;
 
+        element.find(".question input").on('click', function(){
+            quizCounter = Number(quizCounter) + Number(this.value);
+            element.parent().find(":hidden").first().show();
+
+            // pass results to another plugin
+            if (element.parent().find(":hidden").children().length == 0)
+            {
+                element.resultsPlugin({quizCounter:quizCounter});
+            }
+        });
+    }
+    
 
 })( jQuery, window, document );
